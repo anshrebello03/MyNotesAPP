@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LiteNote Elite</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #000000;
+            --sidebar-bg: rgba(10, 10, 10, 0.9);
+            --neon-green: #39ff14;
+            --neon-glow: 0 0 15px rgba(57, 255, 20, 0.6);
+            --paper-white: #ffffff;
+            --text: #ffffff;
+            --border: rgba(57, 255, 20, 0.3);
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- DASHBOARD --- */
+        #app-shell { display: flex; height: 100vh; }
+        #sidebar { 
+            width: 260px; background: var(--sidebar-bg); backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border); padding: 60px 20px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .btn-neon {
+            background: linear-gradient(135deg, #39ff14, #00f2fe);
+            color: #000; border: none; padding: 16px; border-radius: 16px;
+            font-weight: 800; box-shadow: var(--neon-glow); cursor: pointer;
+            transition: 0.2s; font-size: 14px;
+        }
+        .btn-neon:active { transform: scale(0.95); }
+
+        #main-view { flex-grow: 1; padding: 60px 40px; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, 150px); gap: 25px; }
+        
+        .card { 
+            width: 150px; height: 190px; background: #111; border-radius: 22px; 
+            border: 1px solid var(--border); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer;
+            transition: 0.3s;
+        }
+        .card:hover { border-color: var(--neon-green); box-shadow: var(--neon-glow); }
+        .card .icon { font-size: 50px; margin-bottom: 10px; }
+        .card span { font-size: 13px; font-weight: 600; text-align: center; padding: 0 10px; }
+
+        /* --- EDITOR --- */
+        #editor { position: fixed; inset: 0; background: #1a1a1a; display: none; z-index: 1000; flex-direction: column; }
+        
+        #toolbar { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 12px; padding: 10px 20px; background: rgba(0,0,0,0.85);
+            border-radius: 40px; border: 1px solid var(--border); box-shadow: var(--neon-glow);
+            z-index: 2001; align-items: center;
+        }
+        
+        .tool-btn { border: none; background: transparent; color: white; font-weight: 700; cursor: pointer; padding: 8px 15px; border-radius: 20px; }
+        .tool-btn.active { background: var(--neon-green); color: black; }
+
+        #pages-container { flex-grow: 1; overflow-y: auto; padding-top: 100px; display: flex; flex-direction: column; align-items: center; }
+        .white-page { 
+            width: 794px; height: 1123px; background: var(--paper-white); 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); border-radius: 2px;
+            margin-bottom: 50px; position: relative;
+        }
+        canvas { touch-action: none; cursor: crosshair; }
+
+        /* --- MODAL --- */
+        #naming-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; backdrop-filter: blur(10px); }
+        .modal-inner { background:#111; border:1px solid var(--border); border-radius:24px; padding:25px; width:400px; text-align:center; box-shadow: var(--neon-glow); }
+        #hw-canvas { background:white; border-radius:12px; margin-bottom:15px; touch-action: none; }
+        #name-input { width:100%; padding:12px; border-radius:12px; border:1px solid #333; background:#000; color:white; margin-bottom:15px; font-size: 16px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <div id="app-shell">
+        <div id="sidebar">
+            <h1 style="color:var(--neon-green); text-shadow: var(--neon-glow); margin:0 0 20px 10px; font-weight: 900;">LiteNote</h1>
+            <button class="btn-neon" onclick="openNaming('file')">＋ New Notebook</button>
+            <button class="btn-neon" style="background: none; border: 1px solid var(--border); color: white;" onclick="openNaming('folder')">📂 New Folder</button>
+            <div style="margin-top:auto; opacity: 0.4; font-size: 11px; text-align: center; letter-spacing: 1px;">ELITE SYSTEM ACTIVE</div>
+        </div>
+
+        <div id="main-view">
+            <h2 style="font-size: 32px; margin-bottom: 30px; font-weight: 800;">Library</h2>
+            <div class="grid" id="grid"></div>
+        </div>
+    </div>
+
+    <div id="editor">
+        <div id="toolbar">
+            <button class="tool-btn" onclick="closeEditor()">🏠</button>
+            <button class="tool-btn" onclick="undo()">↩️ Undo</button>
+            <div style="width:1px; height:20px; background: var(--border);"></div>
+            <button id="penBtn" class="tool-btn active" onclick="setMode('pen')">🖊️ Pen</button>
+            <button id="eraserBtn" class="tool-btn" onclick="setMode('eraser')">🧽 Stroke Eraser</button>
+            <input type="color" id="penColor" value="#000000" style="border:none; width:30px; height:30px; background:none; cursor: pointer;">
+            <button class="tool-btn" onclick="exportPDF()" style="color:var(--neon-green)">📥 PDF</button>
+        </div>
+        <div id="pages-container"></div>
+    </div>
+
+    <div id="naming-modal">
+        <div class="modal-inner">
+            <h3 style="color:var(--neon-green); margin-top:0;">Name Your Note</h3>
+            <canvas id="hw-canvas" width="350" height="150"></canvas>
+            <input type="text" id="name-input" placeholder="Or type name here...">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-neon" style="flex:1" onclick="scanHandwriting()">Scan Ink</button>
+                <button class="btn-neon" style="flex:1" onclick="finishNaming()">Create</button>
+            </div>
+            <p onclick="document.getElementById('naming-modal').style.display='none'" style="margin-top:15px; font-size:12px; opacity:0.5; cursor:pointer;">Cancel</p>
+        </div>
+    </div>
+
+    <script>
+        let db, currentFolder = 'root', activeFileId = null, mode = 'pen', strokes = [], isDrawing = false, lastX, lastY, pendingType = 'file';
+        
+        // --- 1. DATABASE SETUP ---
+        const request = indexedDB.open("LiteNoteEliteStorage", 1);
+        request.onupgradeneeded = e => {
+            let d = e.target.result;
+            d.createObjectStore("files", {keyPath:"id"});
+            d.createObjectStore("structure", {keyPath:"id"});
+        };
+        request.onsuccess = e => { db = e.target.result; loadItems(); };
+
+        function loadItems() {
+            const tx = db.transaction("structure", "readonly");
+            tx.objectStore("structure").getAll().onsuccess = e => {
+                const grid = document.getElementById('grid'); grid.innerHTML = '';
+                e.target.result.forEach(item => {
+                    const div = document.createElement('div'); div.className = 'card';
+                    div.innerHTML = `<div class="icon">${item.type==='folder'?'📂':'📖'}</div><span>${item.name}</span>`;
+                    div.onclick = () => item.type==='folder'?(currentFolder=item.id, loadItems()):openEditor(item.id);
+                    grid.appendChild(div);
+                });
+            };
+        }
+
+        // --- 2. NAMING & OCR ---
+        const hwCanvas = document.getElementById('hw-canvas');
+        const hwCtx = hwCanvas.getContext('2d');
+        hwCanvas.onpointerdown = e => { isDrawing=true; hwCtx.beginPath(); hwCtx.moveTo(e.offsetX, e.offsetY); };
+        hwCanvas.onpointermove = e => { if(isDrawing) { hwCtx.lineTo(e.offsetX, e.offsetY); hwCtx.strokeStyle="black"; hwCtx.lineWidth=4; hwCtx.lineCap="round"; hwCtx.stroke(); } };
+        window.addEventListener('pointerup', () => isDrawing = false);
+
+        function openNaming(t) { 
+            pendingType = t; 
+            document.getElementById('naming-modal').style.display = 'flex'; 
+            hwCtx.fillStyle="white"; hwCtx.fillRect(0,0,350,150);
+            document.getElementById('name-input').value = "";
+        }
+
+        async function scanHandwriting() {
+            const btn = event.target; btn.innerText = "Scanning...";
+            const res = await Tesseract.recognize(hwCanvas.toDataURL(), 'eng');
+            document.getElementById('name-input').value = res.data.text.trim();
+            btn.innerText = "Scan Ink";
+        }
+
+        function finishNaming() {
+            const name = document.getElementById('name-input').value || "Untitled";
+            const id = 'id_'+Date.now();
+            const tx = db.transaction(["structure", "files"], "readwrite");
+            tx.objectStore("structure").add({ id, name, type: pendingType, parentId: 'root' });
+            if(pendingType==='file') tx.objectStore("files").add({ id, strokes: [] });
+            tx.oncomplete = () => { loadItems(); document.getElementById('naming-modal').style.display='none'; };
+        }
+
+        // --- 3. EDITOR ENGINE ---
+        async function openEditor(id) {
+            activeFileId = id; document.getElementById('editor').style.display = 'flex';
+            document.getElementById('pages-container').innerHTML = '';
+            const tx = db.transaction("files", "readonly");
+            tx.objectStore("files").get(id).onsuccess = e => { 
+                strokes = e.target.result.strokes || []; 
+                addPage(); 
+                redraw(); 
+            };
+        }
+
+        function addPage() {
+            const sheet = document.createElement('div'); sheet.className = 'white-page';
+            const can = document.createElement('canvas'); can.width = 794; can.height = 1123;
+            const ctx = can.getContext('2d', {desynchronized:true});
+            setupDrawing(can, ctx); sheet.appendChild(can); document.getElementById('pages-container').appendChild(sheet);
+        }
+
+        function setupDrawing(can, ctx) {
+            let currentStroke = null;
+            can.onpointerdown = e => {
+                isDrawing = true; const r = can.getBoundingClientRect(); lastX = e.clientX-r.left; lastY = e.clientY-r.top;
+                if(mode==='pen') currentStroke = { color: document.getElementById('penColor').value, points: [{x:lastX, y:lastY}], width: 3*(e.pressure||1) };
+            };
+            can.onpointermove = e => {
+                if(!isDrawing) return; const r = can.getBoundingClientRect(); const x = e.clientX-r.left, y = e.clientY-r.top;
+                if(mode==='pen') {
+                    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); 
+                    ctx.strokeStyle = currentStroke.color; ctx.lineWidth = currentStroke.width; ctx.lineCap='round'; ctx.stroke();
+                    currentStroke.points.push({x, y});
+                } else checkErase(x, y);
+                lastX = x; lastY = y;
+                if(y > 1080 && can === document.querySelector('canvas:last-of-type')) addPage();
+            };
+            can.onpointerup = () => { if(mode==='pen' && currentStroke) { strokes.push(currentStroke); save(); } isDrawing = false; };
+        }
+
+        function checkErase(x, y) {
+            let hit = false;
+            for(let i=strokes.length-1; i>=0; i--) {
+                if(strokes[i].points.some(p => Math.abs(p.x-x)<15 && Math.abs(p.y-y)<15)) { strokes.splice(i,1); hit=true; }
+            }
+            if(hit) { redraw(); save(); }
+        }
+
+        function redraw() {
+            const canvas = document.querySelector('canvas'); if(!canvas) return;
+            const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,794,1123);
+            strokes.forEach(s => {
+                ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y);
+                s.points.forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.strokeStyle=s.color; ctx.lineWidth=s.width || 3; ctx.lineCap='round'; ctx.stroke();
+            });
+        }
+
+        function save() { const tx = db.transaction("files", "readwrite"); tx.objectStore("files").put({ id: activeFileId, strokes }); }
+        function undo() { strokes.pop(); redraw(); save(); }
+        function closeEditor() { document.getElementById('editor').style.display='none'; }
+        function setMode(m) { 
+            mode = m; 
+            document.getElementById('penBtn').classList.toggle('active', m==='pen');
+            document.getElementById('eraserBtn').classList.toggle('active', m==='eraser');
+        }
+
+        async function exportPDF() {
+            const pdf = new jsPDF('p', 'px', [794, 1123]);
+            pdf.addImage(document.querySelector('canvas').toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 794, 1123);
+            pdf.save("EliteNote.pdf");
+        }
+    </script>
+</body>
+</html>
