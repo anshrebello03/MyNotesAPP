@@ -14,22 +14,20 @@
             --text: #ffffff; --border: rgba(57, 255, 20, 0.2);
         }
 
-        /* BLOCK IPAD GESTURES/SELECTION */
         * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; outline: none; box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; overflow: hidden; }
 
-        /* --- DASHBOARD --- */
+        /* --- SIDEBARS --- */
         #app-shell { display: flex; height: 100vh; position: relative; }
         #sidebar { 
             width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); 
-            padding: 60px 20px; display: flex; flex-direction: column; gap: 20px; transition: transform 0.3s ease;
-            z-index: 10;
+            padding: 60px 20px; display: flex; flex-direction: column; gap: 20px; transition: 0.3s;
+            z-index: 100;
         }
-        #sidebar.collapsed { transform: translateX(-260px); position: absolute; }
-        .sidebar-toggle { position: fixed; left: 15px; top: 15px; z-index: 100; background: var(--sidebar-bg); border: 1px solid var(--border); color: var(--neon-green); padding: 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--neon-glow); }
+        #sidebar.collapsed { margin-left: -260px; }
+        .sidebar-toggle { position: fixed; left: 10px; top: 10px; z-index: 200; background: var(--sidebar-bg); border: 1px solid var(--border); color: var(--neon-green); padding: 8px; border-radius: 8px; cursor: pointer; }
         
-        .btn-neon { background: linear-gradient(135deg, #39ff14, #00f2fe); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; }
-        #main-view { flex-grow: 1; padding: 80px 40px; overflow-y: auto; transition: margin-left 0.3s; }
+        #main-view { flex-grow: 1; padding: 60px 40px; overflow-y: auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, 150px); gap: 25px; }
         .card { width: 150px; height: 180px; background: #111; border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
 
@@ -43,32 +41,29 @@
             z-index: 3000; align-items: center;
         }
 
-        /* PAGE COUNTER TOP RIGHT */
-        #page-counter {
-            position: fixed; top: 25px; right: 25px; z-index: 3000;
-            background: rgba(0,0,0,0.8); border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 5px 15px; border-radius: 10px;
-            font-weight: 800; font-size: 14px; text-shadow: var(--neon-glow);
-        }
+        #page-counter { position: fixed; top: 25px; right: 80px; z-index: 3000; color: var(--neon-green); font-weight: 800; font-size: 14px; text-shadow: var(--neon-glow); background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 8px; }
 
-        .tool-btn { border: none; background: transparent; color: white; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .tool-btn { border: none; background: transparent; color: white; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .tool-btn.active { background: var(--neon-green); color: black; }
-        .size-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 50%; color: white; font-size: 12px; cursor: pointer; background: #222; font-weight: bold; }
-        .size-btn.active { border-color: var(--neon-green); color: var(--neon-green); box-shadow: var(--neon-glow); }
+        .size-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 50%; color: white; font-size: 12px; cursor: pointer; background: #222; }
+        .size-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
 
-        #editor-viewport { flex-grow: 1; overflow-y: auto; padding: 120px 20px 100px; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; }
-        
-        /* PAGE BOX & BREAKER */
-        .page-box { width: 794px; min-height: 1123px; background: var(--paper); position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
-        .page-breaker { width: 100%; height: 10px; background: #000000; border-top: 2px solid #222; border-bottom: 2px solid #222; }
-
+        #editor-viewport { flex-grow: 1; overflow-y: auto; padding: 120px 20px; display: flex; flex-direction: column; align-items: center; -webkit-overflow-scrolling: touch; }
+        .page-box { width: 794px; min-height: 1123px; background: var(--paper); position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .page-breaker { width: 794px; height: 12px; background: #000; border-top: 1px solid #333; }
         canvas { touch-action: none; display: block; }
 
-        /* SNAPSHOT SIDEBAR */
-        #snapshot-sidebar { width: 180px; background: var(--sidebar-bg); border-left: 1px solid var(--border); padding: 100px 10px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .thumb-box { width: 100%; aspect-ratio: 1/1.4; background: #222; border: 2px solid transparent; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; }
+        /* --- SNAPSHOT SIDEBAR --- */
+        #snapshot-sidebar { 
+            width: 180px; background: var(--sidebar-bg); border-left: 1px solid var(--border);
+            padding: 80px 10px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+            transition: 0.3s;
+        }
+        #snapshot-sidebar.collapsed { margin-right: -180px; width: 0; padding: 0; border: none; }
+        .snap-toggle { position: fixed; right: 10px; top: 10px; z-index: 3000; background: var(--sidebar-bg); border: 1px solid var(--border); color: var(--neon-green); padding: 8px; border-radius: 8px; }
+
+        .thumb-box { width: 100%; aspect-ratio: 1 / 1.4; background: #222; border: 2px solid transparent; border-radius: 8px; cursor: pointer; overflow: hidden; position: relative; }
         .thumb-box.active { border-color: var(--neon-green); }
-        .thumb-box span { position: absolute; bottom: 5px; right: 5px; background: var(--neon-green); color: black; font-size: 10px; font-weight: 800; padding: 2px 5px; border-radius: 4px; }
         .thumb-img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
@@ -77,9 +72,9 @@
     <div id="app-shell">
         <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-lucide="menu"></i></button>
         <div id="sidebar">
-            <h1 style="color:var(--neon-green); text-shadow: var(--neon-glow); margin-top:20px; font-weight: 900;">LiteNote</h1>
-            <button class="btn-neon" onclick="openNaming('file')"><i data-lucide="file-plus"></i> Notebook</button>
-            <button class="btn-neon" style="background:none; border:1px solid var(--border); color:white;" onclick="openNaming('folder')"><i data-lucide="folder-plus"></i> Folder</button>
+            <h1 style="color:var(--neon-green); text-shadow: var(--neon-glow); margin-top:20px;">LiteNote</h1>
+            <button style="background: var(--neon-green); color: black; border:none; padding:12px; border-radius:10px; font-weight:800;" onclick="openNaming('file')">New Note</button>
+            <button style="background:none; border:1px solid var(--border); color:white; padding:12px; border-radius:10px;" onclick="openNaming('folder')">New Folder</button>
         </div>
 
         <div id="main-view">
@@ -90,56 +85,55 @@
 
     <div id="editor">
         <div id="page-counter">PAGE 1</div>
+        <button class="snap-toggle" onclick="toggleSnap()"><i data-lucide="layers"></i></button>
+        
         <div id="toolbar">
             <button class="tool-btn" onclick="closeEditor()"><i data-lucide="home"></i></button>
-            <button class="tool-btn" onclick="undo()"><i data-lucide="undo"></i></button>
+            <button class="tool-btn" onclick="undo()"><i data-lucide="undo-2"></i></button>
             <div style="width:1px; height:20px; background:var(--border)"></div>
-            <button id="penBtn" class="tool-btn active" onclick="setMode('pen')"><i data-lucide="pen"></i></button>
+            <button id="penBtn" class="tool-btn active" onclick="setMode('pen')"><i data-lucide="pen-tool"></i></button>
             <button id="eraserBtn" class="tool-btn" onclick="setMode('eraser')"><i data-lucide="eraser"></i></button>
-            <div style="display:flex; gap:6px; margin: 0 10px;">
+            <div style="display:flex; gap:4px; margin: 0 5px;">
                 <button class="size-btn" onclick="setSize(1)">1</button>
-                <button class="size-btn active" onclick="setSize(2)">2</button>
-                <button class="size-btn" onclick="setSize(4)">4</button>
+                <button class="size-btn active" onclick="setSize(3)">3</button>
+                <button class="size-btn" onclick="setSize(6)">6</button>
             </div>
-            <input type="color" id="penColor" value="#000000" style="width:25px; height:25px; border:none; background:none; cursor: pointer;">
+            <input type="color" id="penColor" value="#000000" style="width:25px; height:25px; border:none; background:none;">
             <button class="tool-btn" onclick="exportPDF()" style="color:var(--neon-green)"><i data-lucide="download"></i></button>
         </div>
 
-        <div id="editor-viewport" onscroll="updatePageIndicator()">
+        <div id="editor-viewport" onscroll="updatePageCounter()">
             <div id="page-list"></div>
         </div>
 
         <div id="snapshot-sidebar">
-            <p style="font-size: 10px; font-weight: 800; opacity: 0.5; margin-left: 5px; letter-spacing: 1px;">SNAPSHOTS</p>
             <div id="thumb-list"></div>
         </div>
     </div>
 
-    <div id="naming-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9000; align-items:center; justify-content:center;">
-        <div style="background:#111; border:1px solid var(--border); padding:25px; border-radius:24px; width:400px; text-align:center;">
-            <canvas id="hw-canvas" width="350" height="150" style="background:white; border-radius:12px; margin-bottom:15px;"></canvas>
-            <input type="text" id="name-input" placeholder="Note Name..." style="width:100%; padding:12px; border-radius:10px; background:#000; border:1px solid #333; color:white; margin-bottom:15px; font-size:16px;">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-neon" style="flex:1" onclick="scanHandwriting()">Scan</button>
-                <button class="btn-neon" style="flex:1" onclick="finishNaming()">Create</button>
-            </div>
+    <div id="naming-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:5000; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid var(--border); padding:25px; border-radius:20px; width:400px; text-align:center;">
+            <canvas id="hw-canvas" width="350" height="150" style="background:white; border-radius:10px; margin-bottom:15px;"></canvas>
+            <input type="text" id="name-input" placeholder="Name..." style="width:100%; padding:12px; border-radius:10px; background:#000; border:1px solid #333; color:white; margin-bottom:15px;">
+            <button style="background: var(--neon-green); width:100%; padding:12px; border-radius:10px; font-weight:800;" onclick="finishNaming()">Create</button>
             <p onclick="document.getElementById('naming-modal').style.display='none'" style="margin-top:15px; font-size:12px; opacity:0.5; cursor:pointer;">Cancel</p>
         </div>
     </div>
 
     <script>
-        let db, currentFolderId = 'root', activeFileId = null, mode = 'pen', strokes = [], isDrawing = false, lastX, lastY, currentSize = 2;
+        let db, currentFolderId = 'root', activeFileId = null, mode = 'pen', strokes = [], isDrawing = false, lastX, lastY, currentSize = 3;
         let activePointerId = null;
 
-        const request = indexedDB.open("LiteNoteProPagination", 1);
+        const request = indexedDB.open("LiteNoteProFinalV3", 1);
         request.onupgradeneeded = e => {
             let d = e.target.result;
-            if(!d.objectStoreNames.contains("files")) d.createObjectStore("files", {keyPath:"id"});
-            if(!d.objectStoreNames.contains("structure")) d.createObjectStore("structure", {keyPath:"id"});
+            d.createObjectStore("files", {keyPath:"id"});
+            d.createObjectStore("structure", {keyPath:"id"});
         };
         request.onsuccess = e => { db = e.target.result; loadItems(); lucide.createIcons(); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function toggleSnap() { document.getElementById('snapshot-sidebar').classList.toggle('collapsed'); }
         function setSize(s) { currentSize = s; document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('active', b.innerText == s)); }
 
         function loadItems() {
@@ -168,26 +162,22 @@
             const tx = db.transaction("files", "readonly");
             tx.objectStore("files").get(id).onsuccess = e => {
                 strokes = e.target.result.strokes || [];
-                addPage();
-                redraw();
+                addPage(); redraw();
             };
         }
 
         function addPage() {
             const pageId = document.querySelectorAll('.page-box').length + 1;
-            
-            // Add Page Breaker if not the first page
             if(pageId > 1) {
-                const breaker = document.createElement('div'); breaker.className = 'page-breaker';
-                document.getElementById('page-list').appendChild(breaker);
+                const br = document.createElement('div'); br.className = 'page-breaker';
+                document.getElementById('page-list').appendChild(br);
             }
-
             const sheet = document.createElement('div'); sheet.className = 'page-box'; sheet.id = 'page-' + pageId;
             const can = document.createElement('canvas'); can.width = 794; can.height = 1123;
             const ctx = can.getContext('2d');
             
             const thumb = document.createElement('div'); thumb.className = 'thumb-box'; thumb.id = 'thumb-' + pageId;
-            thumb.innerHTML = `<img class="thumb-img" id="img-${pageId}"><span>${pageId}</span>`;
+            thumb.innerHTML = `<img class="thumb-img" id="img-${pageId}">`;
             thumb.onclick = () => sheet.scrollIntoView({behavior: 'smooth'});
             document.getElementById('thumb-list').appendChild(thumb);
 
@@ -221,15 +211,15 @@
             };
         }
 
-        function updatePageIndicator() {
+        function updatePageCounter() {
             const viewport = document.getElementById('editor-viewport');
             const pages = document.querySelectorAll('.page-box');
-            let currentPage = 1;
-            pages.forEach((p, index) => {
-                const rect = p.getBoundingClientRect();
-                if(rect.top < window.innerHeight / 2) currentPage = index + 1;
+            pages.forEach((p, i) => {
+                const r = p.getBoundingClientRect();
+                if(r.top < window.innerHeight/2 && r.bottom > window.innerHeight/2) {
+                    document.getElementById('page-counter').innerText = "PAGE " + (i+1);
+                }
             });
-            document.getElementById('page-counter').innerText = "PAGE " + currentPage;
         }
 
         function checkErase(x, y) {
@@ -252,16 +242,11 @@
             });
         }
 
-        function undo() { strokes.pop(); redraw(); save(); }
         function save() { const tx = db.transaction("files", "readwrite"); tx.objectStore("files").put({ id: activeFileId, strokes }); }
+        function undo() { strokes.pop(); redraw(); save(); }
         function closeEditor() { document.getElementById('editor').style.display='none'; }
         function setMode(m) { mode = m; document.getElementById('penBtn').classList.toggle('active', m==='pen'); document.getElementById('eraserBtn').classList.toggle('active', m==='eraser'); }
-        
         function openNaming(t) { pendingType = t; document.getElementById('naming-modal').style.display='flex'; }
-        async function scanHandwriting() {
-            const res = await Tesseract.recognize(document.getElementById('hw-canvas').toDataURL(), 'eng');
-            document.getElementById('name-input').value = res.data.text.trim();
-        }
         function finishNaming() {
             const name = document.getElementById('name-input').value || "Untitled";
             const id = 'id_'+Date.now();
@@ -273,3 +258,7 @@
     </script>
 </body>
 </html>
+
+
+            
+ 
